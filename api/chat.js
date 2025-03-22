@@ -1,4 +1,4 @@
-
+// Triggering rebuild
 export default async function handler(req, res) {
   const { messages } = req.body;
 
