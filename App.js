@@ -1,77 +1,70 @@
 import React, { useState } from "react";
-import "./App.css";
 
 function App() {
-  const [input, setInput] = useState("");
-  const [messages, setMessages] = useState([]);
+  const [prompt, setPrompt] = useState("");
+  const [output, setOutput] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const sendMessage = async () => {
-    if (!input.trim()) return;
-
-    const newMessage = { role: "user", content: input };
-    setMessages((prev) => [...prev, newMessage]);
-    setInput("");
+  const generateContent = async () => {
     setLoading(true);
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer YOUR_OPENAI_API_KEY"
+      },
+      body: JSON.stringify({
+        model: "gpt-4",
+        messages: [{
+          role: "user",
+          content: `Generate structured content for: "${prompt}". Format in this order:
+1. English product description
+2. Dutch translation
+3. Editor’s note
+4. Lifestyle scenarios
+5. Customer segment
+6. Fabric composition
+7. Care label
+8. Suggested Product SEO phrases ranked in order.`
+        }],
+        temperature: 0.7
+      })
+    });
 
-    try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: "system",
-              content: `You are a product copywriting assistant for De Bijenkorf and Fashot.com.
-              When a user enters a Product Title, SKU, or uploads an image, generate a detailed product description file with:
-
-              - English and Dutch product descriptions
-              - Search-friendly keywords
-              - The Editors’ Note lifestyle scenarios
-              - Accessorising suggestions
-              - Fabric Composition
-              - Care Label
-              - Visual Concept with DALL·E prompts and breakdown
-
-              Ask the user to paste a product title or SKU to begin.`
-            },
-            ...messages,
-            newMessage
-          ]
-        })
-      });
-
-      const data = await res.json();
-      setMessages((prev) => [...prev, { role: "assistant", content: data.message }]);
-    } catch (err) {
-      console.error("Client error:", err);
-      setMessages((prev) => [...prev, { role: "assistant", content: "Something went wrong. Try again later." }]);
-    }
-
+    const data = await response.json();
+    const result = data.choices?.[0]?.message?.content || "No output.";
+    setOutput(result);
     setLoading(false);
   };
 
+  const copyContent = () => navigator.clipboard.writeText(output);
+  const exportPDF = () => {
+    const blob = new Blob([output], { type: "application/pdf" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "generated_content.pdf";
+    link.click();
+  };
+  const downloadTrace = () => {
+    const trace = `Prompt: ${prompt}\n\nModel: gpt-4\n\nOutput:\n${output}`;
+    const blob = new Blob([trace], { type: "text/plain" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "legal_trace_report.txt";
+    link.click();
+  };
+
   return (
-    <div className="app">
-      <h1>De Bijenkorf x Fashot.com AI Assistant</h1>
-      <div className="chat-box">
-        {messages.map((msg, i) => (
-          <div key={i} className={msg.role}>
-            {msg.content}
-          </div>
-        ))}
+    <div className="container">
+      <h1>AMI – Fashot.com Content Director</h1>
+      <textarea placeholder="Enter product name or SKU..." value={prompt} onChange={(e) => setPrompt(e.target.value)} />
+      <div className="buttons">
+        <button onClick={generateContent} disabled={loading}>{loading ? "Generating..." : "Generate"}</button>
+        <button onClick={copyContent}>Copy</button>
+        <button onClick={exportPDF}>Export PDF</button>
+        <button onClick={downloadTrace}>Legal Trace Report</button>
       </div>
-      <div className="input-bar">
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-          placeholder="Enter product name or SKU"
-        />
-        <button onClick={sendMessage} disabled={loading}>
-          Send
-        </button>
-      </div>
+      <pre>{output || "Generated content will appear here..."}</pre>
     </div>
   );
 }
