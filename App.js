@@ -11,8 +11,7 @@ function App() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer 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
-      },
+        Authorization: "Bearer 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
       body: JSON.stringify({
         model: "gpt-4",
         messages: [{
