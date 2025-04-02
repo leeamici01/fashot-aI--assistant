@@ -11,7 +11,7 @@ function App() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer YOUR_OPENAI_API_KEY"
+        Authorization: "Bearer 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
       },
       body: JSON.stringify({
         model: "gpt-4",
