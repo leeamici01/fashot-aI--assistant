@@ -11,8 +11,7 @@ function App() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer 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
-      body: JSON.stringify({
+        Authorization: "Bearer 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
         model: "gpt-4",
         messages: [{
           role: "user",
@@ -30,8 +29,14 @@ function App() {
       })
     });
 
-    const data = await response.json();
-    const result = data.choices?.[0]?.message?.content || "No output.";
+   console.log("✅ GPT API response:", data);
+
+const result = data.choices?.[0]?.message?.content;
+if (result) {
+  setOutput(result);
+} else {
+  setOutput("❌ GPT-4 returned no output. Check API key, model permissions, or billing.");
+}
     setOutput(result);
     setLoading(false);
   };
