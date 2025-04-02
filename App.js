@@ -11,8 +11,7 @@ function App() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer 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
-        model: "gpt-4",
+        Authorization: "Bearer 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
         messages: [{
           role: "user",
           content: `Generate structured content for: "${prompt}". Format in this order:
